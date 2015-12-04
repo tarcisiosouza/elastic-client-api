@@ -47,7 +47,6 @@ final class ElasticServer {
 		port2 = port + 1;
 		settings = ImmutableSettings.settingsBuilder()
 			.put("shield.user", "souza:pri2006")
-			
 		    .put("cluster.name", cluster).build();
 		client = new TransportClient(settings)
 		    .addTransportAddress(new InetSocketTransportAddress(hostname, port))

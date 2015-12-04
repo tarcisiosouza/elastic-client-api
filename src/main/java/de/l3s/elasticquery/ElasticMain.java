@@ -3,6 +3,7 @@ package de.l3s.elasticquery;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,27 +14,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import de.l3s.elasticquery.Article;
+
+import org.apache.commons.collections.map.MultiValueMap;
+
 
 public class ElasticMain {
 
 	public static boolean ASC = true;
     public static boolean DESC = false;
     private static String keywords;
+    private static String field;
     private static int limit;
     private static long count;
     private static HashMap<String, Article> result;
     private static String propFileName;
     private static UrlElasticQuery query;
     
-    public ElasticMain (String q, int lim) throws IOException
+    public ElasticMain (String q, int lim, String f) throws IOException
     {
-    	result = new HashMap <String,Article>();
+    	result = new HashMap<String, Article>();
     	keywords = q;
     	limit = lim;
+    	field = f;
     	count = 0;
     	query = new UrlElasticQuery ();	
     }
+    /*
 	public static void main(String[] args) throws IOException 
 	{
 		propFileName = args[0];
@@ -48,7 +54,7 @@ public class ElasticMain {
    	 	HashMap<String,Article> documents = new HashMap<String,Article>();
    	 	HashMap<String, Integer> domains = new HashMap<String,Integer>();
    	 	
-   	 	new ElasticMain(keywords,limit);
+   	 	new ElasticMain(keywords,limit, field);
    	 	documents = query.getArticlesFilterDates(dateFrom, dateTo, keywords, limit);
 		
 	    Map<String, Integer> sortedMapDesc = sortByComparator(domains, DESC);
@@ -74,12 +80,20 @@ public class ElasticMain {
 		 }
 	
     }
+    */
 	
 	public static String getKeywords() {
 		return keywords;
 	}
 	public static void setKeywords(String key) {
 		keywords = key;
+	}
+	
+	public static String getField() {
+		return field;
+	}
+	public static void setField(String field) {
+		ElasticMain.field = field;
 	}
 	public int getLimit() {
 		return limit;
@@ -92,15 +106,26 @@ public class ElasticMain {
 		return result;
 	}
 
-	public static void run ()
+	public HashMap <String, Integer> getDomains (){
+		return query.getDomains();
+	}
+	
+	public ArrayList<String> getArticleText () {
+		return query.getArticleText();
+	}
+	public ArrayList<String> getTotalDocuments (){
+		return query.getArrayTotalDoc();
+	}
+	public static void run () throws MalformedURLException
 	{
-		result = query.getDocuments(keywords, limit);
+		result = query.getDocuments(keywords, limit, field);
 	}
 
-	public static long getCount ()
+
+	public static long getCount (String f)
 	{
-		count = query.countResponse(keywords);
-		return count;
+		return (query.countResponse(keywords, f));
+		
 	}
 	 private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
 	 {

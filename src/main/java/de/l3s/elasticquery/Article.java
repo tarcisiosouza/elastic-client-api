@@ -6,7 +6,14 @@ public class Article {
 	private String domain;
 	private String text;
 	private String timestamp;
+	private double score;
 	
+	public double getScore() {
+		return score;
+	}
+	public void setScore(double score) {
+		this.score = score;
+	}
 	public String getUrl() {
 		return url;
 	}
