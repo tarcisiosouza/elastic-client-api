@@ -50,28 +50,10 @@ public class UrlElasticQuery
 		ElasticServer.loadProperties();
 	}
 
-/*	
-	public List<Map<String, Object>> getAllDocs(){
-        int scrollSize = 1000;
-        List<Map<String,Object>> esData = new ArrayList<Map<String,Object>>();
-        SearchResponse response = null;
-        int i = 0;
-        while( response == null || response.getHits().hits().length != 0){
-            response = client.prepareSearch(indexName)
-                    .setTypes(typeName)
-                       .setQuery(QueryBuilders.matchAllQuery())
-                       .setSize(scrollSize)
-                       .setFrom(i * scrollSize)
-                    .execute()
-                    .actionGet();
-            for(SearchHit hit : response.getHits()){
-                esData.add(hit.getSource());
-            }
-            i++;
-        }
-        return esData;
-}
-*/
+	public void setArticleText(ArrayList<String> articleText) {
+		this.articleText = articleText;
+	}
+
 	//Perform a query and get Documents as News Articles
 	public HashMap<String, Article> getDocuments (String keywords, int limit, String field) throws MalformedURLException {
 		
@@ -88,16 +70,14 @@ public class UrlElasticQuery
 		        .setTypes(ElasticServer.getType())
 		        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)		    
 		       // .setScroll(new TimeValue(60000))
+		     //  .setQuery(QueryBuilders.queryStringQuery(keywords).minimumShouldMatch("1")).setSize(limit).execute().actionGet();
+
 		         .setQuery(QueryBuilders.matchQuery(field,keywords)).setSize(limit).execute().actionGet();
 		      //  .setQuery(QueryBuilders.matchPhraseQuery(field, keywords).minimumShouldMatch("0.4f"))             // Query
 		      //  .setSize(limit).execute().actionGet();
-		
-		//while (limit > 0) {
-		
+	
 		    for (SearchHit hit : response.getHits().getHits()) {
-		    	
-		    //	if (limit == 0)
-		    	//	break;
+		  
 		    	Map<String,Object> source=hit.getSource();
 		    	Article article = new Article ();
 		    	article.setTimestamp("no_ts");
@@ -134,22 +114,10 @@ public class UrlElasticQuery
 		    	totalDocuments.add(article.getUrl() + " " + article.getTimestamp() + " " + article.getScore() + " " + index);
 		    	articleText.add(article.getText());
 		    	index ++;
-		    	// limit--;
-		    	//response = ElasticServer.getClient().prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-		/*    	if (response.getHits().getHits().length == 0) {
-					        break;
-		    	}*/
+		
 		    }
 		    
-		   // response = ElasticServer.getClient().prepareSearchScroll(response.getScrollId()).execute().actionGet();
-		    
-		    //Break condition: No hits are returned
-		     
-	    //	  if (response.getHits().getHits().length == 0) {
-			//        break;
-			  //  } 
-		//}
-
+		
 		return articles;
 		
 	}

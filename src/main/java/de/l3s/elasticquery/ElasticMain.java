@@ -39,6 +39,7 @@ public class ElasticMain {
     	count = 0;
     	query = new UrlElasticQuery ();	
     }
+  
     /*
 	public static void main(String[] args) throws IOException 
 	{
