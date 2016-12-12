@@ -99,7 +99,7 @@ public class UrlElasticQuery
 		    }
 		    	capturesCount++;
 		    	
-		    	articles.put(article.getUrl(), article);
+		    	articles.put(article.getTimestamp()+article.getUrl(), article);
 		    	
 		    }
 		    esearch.closeConection();
@@ -150,7 +150,7 @@ public class UrlElasticQuery
 		    }
 		    	capturesCount++;
 		    	
-		    	articles.put(article.getUrl(), article);
+		    	articles.put(article.getTimestamp()+article.getUrl(), article);
 		    	
 		    }
 		    esearch.closeConection();
