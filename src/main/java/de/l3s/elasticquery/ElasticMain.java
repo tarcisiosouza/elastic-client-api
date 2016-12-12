@@ -1,9 +1,7 @@
 package de.l3s.elasticquery;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,10 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
-import org.apache.commons.collections.map.MultiValueMap;
+import java.util.Map.Entry;
 
 
 public class ElasticMain {
@@ -40,49 +36,6 @@ public class ElasticMain {
     	query = new UrlElasticQuery ();	
     }
   
-    /*
-	public static void main(String[] args) throws IOException 
-	{
-		propFileName = args[0];
-		
-		PropertyUtil property = new PropertyUtil (propFileName); 
-		String dateFrom = property.getStringProperty("dateFrom");
-		String dateTo = property.getStringProperty("dateTo");
-		String keywords = property.getStringProperty("keywords");
-		int limit = Integer.parseInt(property.getStringProperty("limit"));
-		
-		
-   	 	HashMap<String,Article> documents = new HashMap<String,Article>();
-   	 	HashMap<String, Integer> domains = new HashMap<String,Integer>();
-   	 	
-   	 	new ElasticMain(keywords,limit, field);
-   	 	documents = query.getArticlesFilterDates(dateFrom, dateTo, keywords, limit);
-		
-	    Map<String, Integer> sortedMapDesc = sortByComparator(domains, DESC);
-	    
-	    System.out.println ("\nQuery terms:"+keywords);
-	    System.out.println ("Index name: "+query.getIndexName()+"\n");
-	    System.out.println ("###########<Query Result>###########");
-	    System.out.println ("Total articles: "+query.getTotalDocuments());
-	    System.out.println ("Total domains: "+query.getDomainCount());
-	    	
-	    for (Entry<String, Integer> entry : sortedMapDesc.entrySet())
-	 	{
-	       System.out.println("Domain: " + entry.getKey() + " freq: "+ entry.getValue());
-	 	}  
-		
-		 for(Entry<String, Article> s : documents.entrySet())
-		 {
-				
-		    	System.out.print(s.getKey()+" "+s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" "+s.getValue().getText());
-		    	String str = s.getKey()+" "+s.getValue().getText()+"\n--------\n";
-		    	System.out.println (str);
-		    	
-		 }
-	
-    }
-    */
-	
 	public static String getKeywords() {
 		return keywords;
 	}
@@ -117,17 +70,22 @@ public class ElasticMain {
 	public ArrayList<String> getTotalDocuments (){
 		return query.getArrayTotalDoc();
 	}
-	public static void run () throws MalformedURLException
+	public static void run () throws IOException
 	{
 		result = query.getDocuments(keywords, limit, field);
 	}
 
-
+	public HashMap<String, Article> getAllDocuments () throws IOException
+	{
+		return query.getDocuments(limit);
+	}
+/*
 	public static long getCount (String f)
 	{
-		return (query.countResponse(keywords, f));
+	//	return (query.countResponse(keywords, f));
 		
 	}
+	*/
 	 private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
 	 {
 

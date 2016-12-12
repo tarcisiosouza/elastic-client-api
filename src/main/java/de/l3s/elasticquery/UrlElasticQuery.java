@@ -1,30 +1,20 @@
 package de.l3s.elasticquery;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
-import org.apache.commons.collections.map.MultiValueMap;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-
-import com.google.common.collect.Multimap;
 
 import de.l3s.elasticquery.Article;
 public class UrlElasticQuery  
@@ -44,10 +34,18 @@ public class UrlElasticQuery
 	private static String date;
 	private static String str;
 	private static URL Url;
+	private ElasticServer esearch;
+	private HashMap<String, Article> articles;
+	private HashMap <String, List<Date>> uniqueSnapshots;
+	private List<Date> newdates;
+	
 	public UrlElasticQuery() throws IOException {
 		
 		document = new HashMap <String,Url>();
-		ElasticServer.loadProperties();
+		
+		articles = new HashMap<String, Article>();
+		//ElasticServer.loadProperties();
+		uniqueSnapshots = new HashMap<String,List<Date>>();
 	}
 
 	public void setArticleText(ArrayList<String> articleText) {
@@ -55,29 +53,31 @@ public class UrlElasticQuery
 	}
 
 	//Perform a query and get Documents as News Articles
-	public HashMap<String, Article> getDocuments (String keywords, int limit, String field) throws MalformedURLException {
+	public HashMap<String, Article> getDocuments (String keywords, int limit, String field) throws IOException {
 		
 		domainCount = 0;
 		int index = 0;
 		capturesCount = 0;
-		domains = new HashMap <String,Integer>();
-		HashMap<String, Article> articles = new HashMap<String, Article>();
-		totalDocuments.clear();
-		articleText.clear();
-		indexName = ElasticServer.getIndex();
+		articles.clear();
+		esearch = new ElasticServer();
+		esearch.loadProperties();
+		indexName = esearch.getIndex();
 	
-		SearchResponse response = ElasticServer.getClient().prepareSearch(ElasticServer.getIndex())
-		        .setTypes(ElasticServer.getType())
-		        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)		    
-		       // .setScroll(new TimeValue(60000))
+		SearchResponse response = esearch.getClient().prepareSearch(esearch.getIndex())
+		        .setTypes(esearch.getType())
+		        .setSearchType(SearchType.QUERY_THEN_FETCH)		    
+		        //.setScroll(new TimeValue(1000000))
+		        
 		     //  .setQuery(QueryBuilders.queryStringQuery(keywords).minimumShouldMatch("1")).setSize(limit).execute().actionGet();
-
-		         .setQuery(QueryBuilders.matchQuery(field,keywords)).setSize(limit).execute().actionGet();
-		      //  .setQuery(QueryBuilders.matchPhraseQuery(field, keywords).minimumShouldMatch("0.4f"))             // Query
-		      //  .setSize(limit).execute().actionGet();
-	
+		   //     .setQuery(QueryBuilders.matchQuery(field, keywords)).setSize(limit).execute().actionGet();
+		       // .setScroll(new TimeValue(60000))
+    		 //   .setQuery(QueryBuilders.matchAllQuery()) // Match all query
+    		//    .setSize(limit).execute().actionGet();
+		   .setQuery(QueryBuilders.matchPhraseQuery(field, keywords)).setSize(limit).execute().actionGet();
+			
 		    for (SearchHit hit : response.getHits().getHits()) {
 		  
+		    	 
 		    	Map<String,Object> source=hit.getSource();
 		    	Article article = new Article ();
 		    	article.setTimestamp("no_ts");
@@ -88,6 +88,8 @@ public class UrlElasticQuery
 		    	article.setScore(hit.getScore());
 		    	article.setDomain(source.get("domain").toString());	 
 		    	article.setTimestamp(source.get("ts").toString());
+		    	article.setTitle(source.get("title").toString());
+		    	article.setHtml(source.get("html").toString());
 		    } catch (Exception e)
 		    {
 		    	if (article.getTimestamp().contentEquals("no_ts"))
@@ -99,131 +101,79 @@ public class UrlElasticQuery
 		    	
 		    	articles.put(article.getUrl(), article);
 		    	
-		    	if (domains.containsKey(article.getDomain()))
-		    	{
-		    		int value = domains.get(article.getDomain());
-		    		value += 1;
-		    		domains.put(article.getDomain(), value);
-		    	}
-		    	else
-		    	{
-		    		domains.put(article.getDomain(), 1);
-		    		domainCount += 1;
-		    	}
-		    	
-		    	totalDocuments.add(article.getUrl() + " " + article.getTimestamp() + " " + article.getScore() + " " + index);
-		    	articleText.add(article.getText());
-		    	index ++;
-		
 		    }
+		    esearch.closeConection();
 		    
-		
+		    
 		return articles;
 		
 	}
 	
-
-	public ArrayList<String> getArticleText ()
-	{
-		return articleText;
-	}
-	public void setTotalDocuments(ArrayList<String> totalDocuments) {
-		this.totalDocuments = totalDocuments;
-	}
-
-	public ArrayList<String> getArrayTotalDoc () {
-		return totalDocuments;
-	}
-	//Perform a query and get Documents as News Articles with filter in dates
-	public HashMap<String,Article> getArticlesFilterDates (String dateF, String dateT, String keywords, int limit) {
+	//Match All query
+	public HashMap<String, Article> getDocuments (int limit) throws IOException {
 		
 		domainCount = 0;
-		domains = new HashMap <String,Integer>();
-		dateFrom = DateUtils.parseDate(dateF);
-		dateTo = DateUtils.parseDate(dateT);
-		HashMap<String,Article> articles = new HashMap<String,Article>();
-		
-		indexName = ElasticServer.getIndex();
-		
-		SearchResponse response = ElasticServer.getClient().prepareSearch(ElasticServer.getIndex())
-		        .setTypes(ElasticServer.getType())
-		        .setSearchType(SearchType.SCAN)		    
-		        .setScroll(new TimeValue(0))
-		        .setQuery(QueryBuilders.queryStringQuery(keywords))             // Query
-		        .setPostFilter(FilterBuilders.rangeFilter("ts").from(dateFrom).to(dateTo))
-		        .setSize(limit).execute().actionGet();
-		
-		while (limit > 0) {
+		int index = 0;
+		capturesCount = 0;
+		articles.clear();
+		esearch = new ElasticServer();
+		esearch.loadProperties();
+		indexName = esearch.getIndex();
+	
+		SearchResponse response = esearch.getClient().prepareSearch(esearch.getIndex())
+		        .setTypes(esearch.getType())
+		        .setSearchType(SearchType.QUERY_THEN_FETCH)		    
+		    
+		   .setQuery(QueryBuilders.matchAllQuery()).setSize(limit).execute().actionGet();
+			
 		    for (SearchHit hit : response.getHits().getHits()) {
-		    	
-		    	if (limit == 0)
-		    		break;
+		  
+		    	 
 		    	Map<String,Object> source=hit.getSource();
 		    	Article article = new Article ();
-		    	article.setUrl(source.get("url").toString());
-		    	article.setDomain(source.get("domain").toString());
+		    	article.setTimestamp("no_ts");
+		    	article.setDomain("no_domain");
+		    try {	
 		    	article.setText(source.get("text").toString());
+		    	article.setUrl(source.get("url").toString()); 	
+		    	article.setScore(hit.getScore());
+		    	article.setDomain(source.get("domain").toString());	 
 		    	article.setTimestamp(source.get("ts").toString());
+		    	article.setTitle(source.get("title").toString());
+		    	article.setHtml(source.get("html").toString());
+		    } catch (Exception e)
+		    {
+		    	if (article.getTimestamp().contentEquals("no_ts"))
+		    		article.setTimestamp(source.get("timestamp").toString());
+		    	if (article.getDomain().contentEquals("no_domain"))
+		    		article.setDomain(getDomain(article.getUrl()));
+		    }
 		    	capturesCount++;
 		    	
 		    	articles.put(article.getUrl(), article);
 		    	
-		    	if (domains.containsKey(article.getDomain()))
-		    	{
-		    		int value = domains.get(article.getDomain());
-		    		value += 1;
-		    		domains.put(article.getDomain(), value);
-		    	}
-		    	else
-		    	{
-		    		domains.put(article.getDomain(), 1);
-		    		domainCount += 1;
-		    	}
-		    	
-		    	limit--;
 		    }
-		    response = ElasticServer.getClient().prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(0)).execute().actionGet();
+		    esearch.closeConection();
 		    
-		   // response = ElasticServer.getClient().prepareSearchScroll(response.getScrollId()).execute().actionGet();
 		    
-		    //Break condition: No hits are returned
-		    if (response.getHits().getHits().length == 0) {
-		        break;
-		    }
-		}
-
 		return articles;
 		
 	}
-	
-	public long countResponse (String keywords,String field)
-	{
-		long result = 0;
-		SearchResponse response = ElasticServer.getClient().prepareSearch(ElasticServer.getIndex())
-		        .setTypes(ElasticServer.getType())
-		        .setSearchType(SearchType.COUNT)		    
-		       // .setScroll(new TimeValue(60000))
-		         .setQuery(QueryBuilders.matchQuery(field,keywords)).execute().actionGet();
+/*	
+	public HashMap<String, Url> getDocuments (String dateF, String dateT, String keywords, String field,int limit) {
 		
-		result = response.getHits().totalHits();
-		return result;
-	}
-	
-	public HashMap<String, Url> getDocuments (String dateF, String dateT, String keywords, int limit) {
-	
 		dateFrom = DateUtils.parseDate(dateF);
 		dateTo = DateUtils.parseDate(dateT);
 		domainCount = 0;
 		domains = new HashMap <String,Integer>();
 		document = new HashMap <String, Url>();
-		indexName = ElasticServer.getIndex();
 		
-		SearchResponse response = ElasticServer.getClient().prepareSearch(ElasticServer.getIndex())
-		        .setTypes(ElasticServer.getType())
-		        .setSearchType(SearchType.SCAN)		    
-		        .setScroll(new TimeValue(60000))
-		        .setQuery(QueryBuilders.queryString(keywords))             // Query
-		        .setPostFilter(FilterBuilders.rangeFilter("ts").from(dateFrom).to(dateTo))   // Filter
+		SearchResponse response = esearch.getClient().prepareSearch(esearch.getIndex())
+		        .setTypes(esearch.getType())
+		        .setSearchType(SearchType.QUERY_THEN_FETCH)		    
+		     
+		        .setQuery(QueryBuilders.matchQuery(field, keywords))             // Query
+		        .setPostFilter(QueryBuilders.rangeQuery("ts").from(dateFrom).to(dateTo))   // Filter
 		        .setSize(100).execute().actionGet();
 		
 		while (limit > 0) {
@@ -259,7 +209,7 @@ public class UrlElasticQuery
 		    	
 		    	limit--;
 		    }
-		    response = ElasticServer.getClient().prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(600000)).execute().actionGet();
+		    response = esearch.getClient().prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(600000)).execute().actionGet();
 		    //Break condition: No hits are returned
 		    if (response.getHits().getHits().length == 0) {
 		        break;
@@ -269,6 +219,20 @@ public class UrlElasticQuery
 		return document;
 		
 	}
+*/
+
+	public ArrayList<String> getArticleText ()
+	{
+		return articleText;
+	}
+	public void setTotalDocuments(ArrayList<String> totalDocuments) {
+		this.totalDocuments = totalDocuments;
+	}
+
+	public ArrayList<String> getArrayTotalDoc () {
+		return totalDocuments;
+	}
+
 	
 	public String getIndexName() {
 		return indexName;

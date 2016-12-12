@@ -3,11 +3,26 @@ package de.l3s.elasticquery;
 public class Article {
 
 	private String url;
+	private String title;
 	private String domain;
 	private String text;
 	private String timestamp;
+	private String html;
+	
+	public String getHtml() {
+		return html;
+	}
+	public void setHtml(String html) {
+		this.html = html;
+	}
 	private double score;
 	
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
 	public double getScore() {
 		return score;
 	}
