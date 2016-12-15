@@ -36,13 +36,13 @@ in the directory `target` that contains all the classes.
 3. Example of using the client in your java code:
 -----------------------------------
 ```
-    	 String query = "Angela Merkel";
-    	 int limit = 1000; //total number of documents to retrieve
-    	 HashMap<String,Article> documents = new HashMap<String,Article>();
-    	 new ElasticMain (query, limit,"text");
-    	 ElasticMain.setKeywords(query);
-	 ElasticMain.run();
-         documents = ElasticMain.getResult();
-	 for(Entry<String, Article> s : documents.entrySet())
-	   System.out.print(s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" \n");
+String query = "Angela Merkel";
+int limit = 1000; //total number of documents to retrieve
+HashMap<String,Article> documents = new HashMap<String,Article>();
+new ElasticMain (query, limit,"text");
+ElasticMain.setKeywords(query);
+ElasticMain.run();
+documents = ElasticMain.getResult();
+for(Entry<String, Article> s : documents.entrySet())
+	System.out.print(s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" \n");
 ```
