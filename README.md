@@ -46,3 +46,23 @@ documents = ElasticMain.getResult();
 for(Entry<String, Article> s : documents.entrySet())
 	System.out.print(s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" \n");
 ```
+4. Depending on the index you want to search on the cluster you should edit the file config.properties
+-----------------------------------
+For the german news
+```
+index=souza_warc_news
+type=capture
+cluster=nextsearch
+hostname=master02.ib
+port=9350
+
+```
+For the UK News
+```
+index=souza_warc_news_annotated
+type=capture
+cluster=nextsearch
+hostname=master02.ib
+port=9350
+
+```
