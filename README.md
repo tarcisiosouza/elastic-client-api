@@ -41,10 +41,8 @@ in the directory `target` that contains all the classes.
     	 HashMap<String,Article> documents = new HashMap<String,Article>();
     	 new ElasticMain (query, limit,"text");
     	 ElasticMain.setKeywords(query);
-		   ElasticMain.run();
-	
-		   documents = ElasticMain.getResult();
-
-		    for(Entry<String, Article> s : documents.entrySet())
-		      System.out.print(s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" \n");
+	 ElasticMain.run();
+         documents = ElasticMain.getResult();
+	 for(Entry<String, Article> s : documents.entrySet())
+	   System.out.print(s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" \n");
 ```
