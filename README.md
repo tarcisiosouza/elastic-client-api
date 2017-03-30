@@ -24,29 +24,30 @@ mvn clean install
 ```
 mvn eclipse:eclipse
 ```
-
-2. If you want to use the jar with all the dependencies:
+2. Example of using the client in your java code:
 -----------------------------------
 ```
-mvn clean package
-```
-2.1. Now you should have a .jar called `elasticquery-jar-with-dependencies.jar`
-in the directory `target` that contains all the classes.
-
-3. Example of using the client in your java code:
------------------------------------
-```
+//For every query it return a HashMap with the Articles and the BM25 scores
 String query = "Angela Merkel";
 int limit = 1000; //total number of documents to retrieve
-HashMap<String,Article> documents = new HashMap<String,Article>();
-new ElasticMain (query, limit,"text");
-ElasticMain.setKeywords(query);
-ElasticMain.run();
-documents = ElasticMain.getResult();
-for(Entry<String, Article> s : documents.entrySet())
-	System.out.print(s.getValue().getTimestamp()+" "+s.getValue().getUrl()+" \n");
+Map<Article, Double> documents = new HashMap<Article, Double>();
+		new ElasticMain(query, limit, "url");
+		ElasticMain.setKeywords(query);
+		ElasticMain.run();
+		documents = ElasticMain.getResult();
+		System.out.println("Total documents: " + documents.size());
+		int i = 0;
+		for (Entry<Article, Double> s : documents.entrySet())
+			System.out.print(s.getKey().getTimestamp() + " " + s.getKey().getUrl() + " " + s.getKey().getScore() + " \n");
+
 ```
-4. Depending on the index you want to search on the cluster you should edit the file config.properties
+2. If you want full-text search:
+-----------------------------------
+```
+Change the 'url' field to 'text'
+new ElasticMain(query, limit, "text");
+```
+3. Depending on the index you want to search on the cluster you should edit the file config.properties
 -----------------------------------
 For the german news
 ```
