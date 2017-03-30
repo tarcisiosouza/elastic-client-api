@@ -66,14 +66,8 @@ public class UrlElasticQuery
 		SearchResponse response = esearch.getClient().prepareSearch(esearch.getIndex())
 		        .setTypes(esearch.getType())
 		        .setSearchType(SearchType.QUERY_THEN_FETCH)		    
-		        //.setScroll(new TimeValue(1000000))
-		        
-		     //  .setQuery(QueryBuilders.queryStringQuery(keywords).minimumShouldMatch("1")).setSize(limit).execute().actionGet();
-		   //     .setQuery(QueryBuilders.matchQuery(field, keywords)).setSize(limit).execute().actionGet();
-		       // .setScroll(new TimeValue(60000))
-    		 //   .setQuery(QueryBuilders.matchAllQuery()) // Match all query
-    		//    .setSize(limit).execute().actionGet();
-		   .setQuery(QueryBuilders.matchPhraseQuery(field, keywords)).setSize(limit).execute().actionGet();
+		    
+		   .setQuery(QueryBuilders.matchQuery(field, keywords)).setSize(limit).execute().actionGet();
 			
 		    for (SearchHit hit : response.getHits().getHits()) {
 		  
@@ -159,67 +153,6 @@ public class UrlElasticQuery
 		return articles;
 		
 	}
-/*	
-	public HashMap<String, Url> getDocuments (String dateF, String dateT, String keywords, String field,int limit) {
-		
-		dateFrom = DateUtils.parseDate(dateF);
-		dateTo = DateUtils.parseDate(dateT);
-		domainCount = 0;
-		domains = new HashMap <String,Integer>();
-		document = new HashMap <String, Url>();
-		
-		SearchResponse response = esearch.getClient().prepareSearch(esearch.getIndex())
-		        .setTypes(esearch.getType())
-		        .setSearchType(SearchType.QUERY_THEN_FETCH)		    
-		     
-		        .setQuery(QueryBuilders.matchQuery(field, keywords))             // Query
-		        .setPostFilter(QueryBuilders.rangeQuery("ts").from(dateFrom).to(dateTo))   // Filter
-		        .setSize(100).execute().actionGet();
-		
-		while (limit > 0) {
-		    for (SearchHit hit : response.getHits().getHits()) {
-		    	
-		    	if (limit == 0)
-		    		break;
-		    	Map<String,Object> source=hit.getSource();
-		    	url = new Url ();
-		    	url.setOrigUrl(source.get("orig").toString());
-		    	url.setCompressedsize(source.get("compressedsize").toString());
-		    	url.setFilename(source.get("filename").toString());
-		    	url.setOffset(source.get("offset").toString());
-		    	url.setRedirectUrl(source.get("redirectUrl").toString());
-		    	url.setTimestamp(source.get("ts").toString());
-		    	url.setDomain(source.get("orig").toString());
-		    	capturesCount++;
-		    	
-		    	document.put(url.getOrigUrl(), url);
-		    	
-		    	if (domains.containsKey(url.getDomain()))
-		    	{
-		    		int value = domains.get(url.getDomain());
-		    		value += 1;
-		    		domains.put(url.getDomain(), value);
-		    	}
-		    	else
-		    	{
-		    		domains.put(url.getDomain(), 1);
-		    		domainCount += 1;
-		    	}
-		    
-		    	
-		    	limit--;
-		    }
-		    response = esearch.getClient().prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(600000)).execute().actionGet();
-		    //Break condition: No hits are returned
-		    if (response.getHits().getHits().length == 0) {
-		        break;
-		    }
-		}
-
-		return document;
-		
-	}
-*/
 
 	public ArrayList<String> getArticleText ()
 	{
