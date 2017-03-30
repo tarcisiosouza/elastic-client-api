@@ -32,7 +32,6 @@ String query = "Angela Merkel";
 int limit = 1000; //total number of documents to retrieve
 Map<Article, Double> documents = new HashMap<Article, Double>();
 		new ElasticMain(query, limit, "url");
-		ElasticMain.setKeywords(query);
 		ElasticMain.run();
 		documents = ElasticMain.getResult();
 		System.out.println("Total documents: " + documents.size());
