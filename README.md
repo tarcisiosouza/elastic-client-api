@@ -35,7 +35,6 @@ Map<Article, Double> documents = new HashMap<Article, Double>();
 		ElasticMain.run();
 		documents = ElasticMain.getResult();
 		System.out.println("Total documents: " + documents.size());
-		int i = 0;
 		for (Entry<Article, Double> s : documents.entrySet())
 			System.out.print(s.getKey().getTimestamp() + " " + s.getKey().getUrl() + " " + s.getKey().getScore() + " \n");
 
