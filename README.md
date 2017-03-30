@@ -27,7 +27,7 @@ mvn eclipse:eclipse
 2. Example of using the client in your java code:
 -----------------------------------
 ```
-//For every query it return a HashMap with the Articles and the BM25 scores
+//For every query it returns a HashMap with the Articles and the BM25 scores
 String query = "Angela Merkel";
 int limit = 1000; //total number of documents to retrieve
 Map<Article, Double> documents = new HashMap<Article, Double>();
