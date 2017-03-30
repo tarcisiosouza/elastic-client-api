@@ -22,13 +22,13 @@ public class ElasticMain {
     private static String field;
     private static int limit;
     private static long count;
-    private static HashMap<String, Article> result;
+    private static Map<Article, Double> result;
     private static String propFileName;
     private static UrlElasticQuery query;
     
     public ElasticMain (String q, int lim, String f) throws IOException
     {
-    	result = new HashMap<String, Article>();
+    	result = new HashMap<Article, Double>();
     	keywords = q;
     	limit = lim;
     	field = f;
@@ -56,7 +56,7 @@ public class ElasticMain {
 		limit = lim;
 	}
 	
-	public static HashMap<String, Article> getResult() {
+	public static Map<Article, Double> getResult() {
 		return result;
 	}
 
@@ -72,7 +72,7 @@ public class ElasticMain {
 	}
 	public static void run () throws IOException
 	{
-		result = query.getDocuments(keywords, limit, field);
+		result = query.getRankedDocuments(keywords, limit, field);
 	}
 
 	public HashMap<String, Article> getAllDocuments () throws IOException
